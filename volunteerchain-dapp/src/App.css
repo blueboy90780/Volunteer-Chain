@@ -1,0 +1,130 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f4f6f8;
+    color: #333;
+  }
+  
+  .App { text-align: center; }
+  
+  .App-header {
+    background-color: #ffffff;
+    padding: 20px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  
+  .App-header h1 {
+    margin: 0;
+    font-size: 1.8em;
+  }
+  
+  .App-header nav button {
+    margin: 0 10px;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .App-header nav button:hover {
+    background-color: #f0f0f0;
+    border-color: #aaa;
+  }
+  
+  main { padding: 20px; }
+  
+  .credential-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+  }
+  
+  .card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 320px;
+    transition: transform 0.2s ease-in-out;
+  }
+  .card:hover { transform: translateY(-5px); }
+  
+  .card.loading-card, .card.error-card {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 400px;
+    font-weight: 500;
+    color: #888;
+  }
+  
+  .card.error-card {
+    background-color: #fff0f0;
+    color: #d8000c;
+  }
+  
+  .card-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background-color: #eee;
+  }
+  
+  .card-content {
+    padding: 16px;
+    text-align: left;
+  }
+  
+  .card-content h3 { margin-top: 0; margin-bottom: 12px; }
+  .card-content p { margin: 4px 0; color: #555; }
+  
+  .verification-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 30px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .input-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  .input-group input {
+    flex-grow: 1;
+    padding: 12px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  
+  .input-group button {
+    padding: 12px 20px;
+    font-size: 1em;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .input-group button:disabled { background-color: #aaa; }
+  
+  .error-message { color: #d8000c; margin-top: 15px; }
+  
+  .verified-result {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+  }
+  
+  .verified-result .card { margin: 20px auto 0; }
