@@ -1,0 +1,26 @@
+{
+  "name": "volunteer-chain-offchain",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p .",
+    "start": "tsx src/demo.ts",
+    "demo": "tsx src/demo.ts",
+    "lint": "echo No linter configured"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.3",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.4",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.2"
+  }
+}
