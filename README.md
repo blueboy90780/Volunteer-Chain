@@ -1,13 +1,5 @@
 # Volunteer Chain
 
-This is the description of what the code block changes:
-<changeDescription>
-Append usage instructions for the off-chain demo and environment setup without removing existing content.
-</changeDescription>
-
-This is the code block that represents the suggested code change:
-
-````markdown
 # VolunteerChain Off-Chain Prototype
 
 This folder includes a TypeScript prototype for the Cryptographic Verification features:
@@ -69,4 +61,3 @@ Security notes:
 
 - Never commit real private keys. Use environment variables and secrets managers.
 - Prefer short QR payloads (URL pointer), fetch voucher JSON securely (HTTPS), then verify on-chain.
-````

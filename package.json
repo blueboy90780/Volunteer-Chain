@@ -13,13 +13,14 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "axios": "^1.7.7",
+    "pinata": "^1.0.0",
     "dotenv": "^16.4.5",
     "ethers": "^6.13.3",
     "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "@types/node": "^22.5.4",
+    "@types/qrcode": "^1.5.5",
     "tsx": "^4.19.2",
     "typescript": "^5.6.2"
   }

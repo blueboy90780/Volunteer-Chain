@@ -1,5 +1,5 @@
 import { keccak256, toUtf8Bytes } from "ethers";
-import type { AddressLike, TypedDataDomain, Signer } from "ethers";
+import type { TypedDataDomain, Signer } from "ethers";
 import { Wallet, verifyTypedData } from "ethers";
 import { randomBytes } from "node:crypto";
 import { env, requireEnv } from "./env.js";
@@ -14,8 +14,8 @@ export function makeNonce(bytes = 12): string {
 }
 
 export function defaultDomain(
-  chainId = 11155111 as number,
-  verifyingContract = "0x0000000000000000000000000000000000000000" as AddressLike
+  chainId: number = 11155111,
+  verifyingContract: string = "0x0000000000000000000000000000000000000000"
 ): TypedDataDomain {
   // chainId default is Sepolia; verifyingContract can be replaced later with real address
   return {
