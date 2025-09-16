@@ -1,6 +1,5 @@
 import { env } from "./lib/env.js";
 import { pinJSONToIPFS } from "./lib/pinata.js";
-import { Blob } from "node:buffer";
 import {
   makeNonce,
   signVoucher,

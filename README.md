@@ -11,7 +11,7 @@ This folder includes a TypeScript prototype for the Cryptographic Verification f
 
 ## Prerequisites
 
-- Node.js 18+
+- Bun 1.1+
 - Pinata account and JWT (recommended) or API key/secret
 
 ## Setup
@@ -31,13 +31,13 @@ ORGANIZER_PRIVATE_KEY=0x...
 2. Install dependencies:
 
 ```pwsh
-npm install
+bun install
 ```
 
 ## Run the demo
 
 ```pwsh
-npm run demo
+bun run demo
 ```
 
 What it does:

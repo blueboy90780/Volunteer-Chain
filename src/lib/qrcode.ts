@@ -1,7 +1,6 @@
 import QRCode from "qrcode";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 export type QRPayload = {
   // A compact payload to embed in the QR, pointing to remote JSON if large

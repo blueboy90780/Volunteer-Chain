@@ -1,5 +1,4 @@
 import { PinataSDK } from "pinata";
-import { Blob } from "buffer";
 import { env } from "./env.js";
 
 export type PinResult = {
@@ -32,10 +31,11 @@ export async function pinJSONToIPFS(
     (pinata as any).upload?.public ?? (pinata as any).upload;
   if (!uploadApi) throw new Error("Pinata SDK upload API not available");
 
-  const jsonBlob = new Blob([JSON.stringify(data)], {
+  // Bun implements Web File/Blob globally; Pinata SDK expects a File with a name
+  const file = new File([JSON.stringify(data)], `${name}.json`, {
     type: "application/json",
   });
-  const res = await uploadApi.file(jsonBlob, { name: `${name}.json` });
+  const res = await uploadApi.file(file);
 
   // Expected response contains `cid`
   const cid: string = res.cid ?? res.IpfsHash;
