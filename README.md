@@ -1,126 +1,181 @@
-# Volunteer Chain
+⸻
 
-## Smart Contract + Off-Chain Service (EIP-712 Flow)
+📘 Volunteer Chain — Soulbound Token (SBT) System
 
-This part of the project includes the Solidity SBT smart contract and a Python FastAPI off-chain service that supports:
+This project implements a Soulbound Token (SBT) system for tracking volunteer contributions, using an on-chain ERC-721 contract (non-transferable) and an off-chain service for EIP-712 voucher signing & verification.
 
-- ✅ Organizer role management (whitelisting)
-- ✅ EIP-712 signature flow for voucher issuance
-- ✅ On-chain SBT minting (non-transferable ERC-721)
-- ✅ Event ID & hours tracking (prevents double-claims)
-- ✅ Public verification interface for employers/institutions
-- ✅ IPFS metadata integration
+⸻
 
----
+🚀 Features
 
-## Prerequisites
+	•	✅ Verify authenticity of vouchers (signature, replay protection, optional business rules).
+	•	✅ Mint & issue SBT: permanently assign to student wallet, link to IPFS metadata.
+	•	✅ Organizer role management: only whitelisted organizers can issue vouchers.
+	•	✅ Event tracking: prevent duplicate claims for the same event.
+	•	✅ Public verification interface: query SBTs held by a student.
 
-- Python 3.9+
-- Node.js + npm (for frontend dApp integration)
-- Brownie (Ethereum smart contract development framework)
-- Sepolia Testnet ETH (via faucet)
-- Infura / PublicNode RPC URL
+⸻
 
----
+📦 Prerequisites
 
-## Setup
+	•	Python 3.9+
+	•	Node.js 16+ (for frontend dApp, optional)
+	•	Brownie & Ganache/Anvil or Sepolia RPC
+	•	Access to Sepolia testnet ETH
 
-1) Clone & venbash
-cd ~/Volunteer-Chain
-python3 -m venv .venv && source .venv/bin/activate
+⸻
+
+⚙️ Setup
+
+1. Clone repo & install Python dependencies
+
+# Clone project
+```
+git clone https://github.com/<your-org>/Volunteer-Chain.git
+cd Volunteer-Chain/"Smart Contract and SBT Token"
+```
+# Setup Python venv
+```
+python3 -m venv .venv
+source .venv/bin/activate
+```
+# Upgrade pip & install dependencies
+```
 pip install --upgrade pip
-pip install -r "Smart Contract and SBT Token/offchain/requirements.txt"
+pip install -r offchain/requirements.txt
+```
 
-2) Environment
+⸻
+
+2. Configure environment
+
+Copy .env.example to .env and fill in values:
+```
+cp .env.example .env
+nano .env
+```
+Example values:
+```
 RPC_URL=https://rpc.sepolia.org
 CHAIN_ID=11155111
-CONTRACT_ADDRESS=0x2f31220E16662A5658201c900d2d597Fdaa56779
-PRIVATE_KEY=0x<ORGANIZER_PRIVATE_KEY>   # do NOT use a production key
+CONTRACT_ADDRESS=0x<DEPLOYED_CONTRACT>
+PRIVATE_KEY=0x<ORGANIZER_PRIVATE_KEY>   # DO NOT use production key
+```
 
-3) Compile & deploy
-cd "Smart Contract and SBT Token"
+⸻
+
+3. Compile & deploy contract
+```
+cd Volunteer-Chain/"Smart Contract and SBT Token"
 brownie compile
 brownie run scripts/deploy.py --network sepolia-public
-# => SBT deployed at: 0x....
+```
+Output will show:
+```
+SBT deployed at: 0x...
+```
+Copy this contract address into your .env.
 
-4) Off-chain API
-cd "Smart Contract and SBT Token/offchain"
+⸻
+
+4. Run off-chain API
+```
+cd Volunteer-Chain/"Smart Contract and SBT Token/offchain"
 source ../.venv/bin/activate
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-
-// Health check
+```
+Health check:
+```
 curl -s http://127.0.0.1:8000/health
+```
 
----
+⸻
 
-## Run the demo
+🧪 Test Flow
 
-1) Sign a voucher (EIP-712)
+1. Sign voucher (off-chain)
+```
+STUDENT=0xF26CC4C12dbBb207423bBd479a814b816a562883
+
+EVENT=EVT-README-001
+
+ROLE=Helper
+
+HOURS=4
+
 curl -s -X POST http://127.0.0.1:8000/sign \
   -H "Content-Type: application/json" \
-  -d '{
-    "student":"0xF26CC4C12dbBb207423bBd479a814b816a562883",
-    "eventId":"EVT-001",
-    "role":"Helper",
-    "hours":4
-  }'
+  -d "{\"student\":\"$STUDENT\",\"eventId\":\"$EVENT\",\"role\":\"$ROLE\",\"hours\":$HOURS}"
+```
 
-2) Issue (mint on-chain)
+This returns:
+```
+{
+  "signature": "0x...",
+  "message": {
+    "student": "0xF26C...",
+    "eventId": "EVT-README-001",
+    "role": "Helper",
+    "hours": 4,
+    "nonce": "0x...",
+    "expiresAt": 1758275147
+  }
+}
+```
+
+⸻
+
+2. Issue SBT (on-chain)
+
+Take the signature, nonce, and expiresAt from the previous step:
+
+```
 curl -s -X POST http://127.0.0.1:8000/issue_signed \
   -H "Content-Type: application/json" \
   -d '{
-    "signature":"0x<signature_from_sign>",
+    "signature":"0x...",
     "message":{
-      "student":"0xF26CC4C12dbBb207423bBd479a814b816a562883",
-      "eventId":"EVT-001",
+      "student":"0xF26C...",
+      "eventId":"EVT-README-001",
       "role":"Helper",
       "hours":4,
-      "nonce":"0x<nonce_from_sign>",
-      "expiresAt":<expires_from_sign>
+      "nonce":"0x...",
+      "expiresAt":1758275147
     }
   }'
 
-* What it does: 
-	•	Pins (optional) event metadata to IPFS (CID) → tokenURI holds the IPFS link.
-	•	Creates and signs EIP-712 voucher off-chain (organizer).
-	•	Verifies domain & rules off-chain, enforces invariants on-chain:
-	•	organizer is whitelisted
-	•	usedNonces[nonce] == false
-	•	eventClaimed[eventId][student] == false
-	•	hours ≤ maxHoursPerEvent[eventId] (0 = unlimited)
-	•	Mints a non-transferable ERC-721 to the student wallet.
+```
 
-* Artifacts:
-	•	Smart Contract and SBT Token/build/contracts/SBT.json — ABI
-	•	(Nếu có QR) outputs/voucher-<eventId>.png — compact QR
-	•	outputs/voucher-<eventId>.json — signed voucher
+If successful, the API responds with a transaction hash (txHash). You can verify it on Sepolia Etherscan.
 
- ---
+⸻
 
- ## Integrating with the smart contract
- 
-	•	Contract: SBT @ 0x2f31220E16662A5658201c900d2d597Fdaa56779 (Sepolia)
-	•	Public methods:
-	    •	addOrganizer(address) / removeOrganizer(address) / isOrganizer(address)
-	    •	setMaxHoursForEvent(bytes32 eventId, uint256 maxHours)
-	    •	mintSBT(address student, string uri, bytes32 nonce, bytes32 eventId, uint256 contributedHours, address organizer)
-	    •	tokenURI(uint256 tokenId)
-	•	Non-transferable: transfers revert (soulbound)
+3. On-chain verification helpers
+```
+cd Volunteer-Chain/"Smart Contract and SBT Token/offchain"
+```
+# Check if event was claimed
+```
+python3 sbt_tools.py event_claimed EVT-README-001 0xF26CC4C12dbBb207423bBd479a814b816a562883
+```
+# Check if nonce was used
+```
+python3 sbt_tools.py used_nonce 0x<NONCE>
+```
 
----
+⸻
 
-## Security note
+🔒 Security Notes
 
-	•	Never commit .env or private keys; use .env.example for templates.
-	•	Keep EIP-712 domain consistent (name/version/chainId/contract).
-	•	Use fresh nonce for each voucher; expire quickly.
-	•	Prefer HTTPS when fetching voucher JSON; QR should carry short pointers (CID/URL), not full secrets.
+	•	Never commit .env or private keys to Git.
+	•	Always use .env.example for templates.
+	•	Nonce must be unique; expired signatures are rejected.
+	•	For Windows users: use Git Bash or WSL, since source is a bash built-in.
 
----
+⸻
 
+📚 References
 
-
-
-
-
-
+	•	Ethereum Brownie: https://eth-brownie.readthedocs.io
+	•	FastAPI: https://fastapi.tiangolo.com
+	•	EIP-712: https://eips.ethereum.org/EIPS/eip-712
