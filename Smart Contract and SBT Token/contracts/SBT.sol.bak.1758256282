@@ -40,7 +40,7 @@ contract SBT is ERC721, Ownable {
         uint256 indexed tokenId,
         address indexed student,
         bytes32 indexed eventId,
-        uint256 contributedHours,
+        uint256 hours,
         string uri,
         address organizer
     );
@@ -93,7 +93,13 @@ contract SBT is ERC721, Ownable {
      *  - organizer is whitelisted
      *  - nonce not used (anti-replay)
      *  - student has not claimed this eventId
-     *  - contributedHours <= maxHoursPerEvent[eventId] (if max set)
+     *  - hours <= maxHoursPerEvent[eventId] (if max set)
+     * @param student recipient wallet
+     * @param uri     token metadata (e.g., ipfs://CID or a gateway URL)
+     * @param nonce32 unique nonce used exactly once
+     * @param eventId hashed/text-based eventId from off-chain (use keccak(text) off-chain)
+     * @param hours   contributed hours
+     * @param organizer the organizer address tied to the signed voucher (must be whitelisted)
      */
     function mintSBT(
         address student,
@@ -125,9 +131,20 @@ contract SBT is ERC721, Ownable {
     }
 
     // ========== Soulbound (non-transferable) ==========
-    /// @dev Block all transfers; minting (_safeMint) still works.
-    function _transfer(address from, address to, uint256 tokenId) internal virtual override {
-        revert("Non-transferable SBT");
+    /// @dev Block transfers; allow only mint (from == 0) and (optionally) owner burns (to == 0).
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId,
+        uint256 batchSize
+    ) internal virtual override {
+        // allow mint (from == 0) and burn (to == 0) if ever used;
+        // block normal transfers between addresses
+        require(
+            from == address(0) || to == address(0),
+            "Non-transferable SBT"
+        );
+        super._beforeTokenTransfer(from, to, tokenId, batchSize);
     }
 
     // ========== Token URI ==========

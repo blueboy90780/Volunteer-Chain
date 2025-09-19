@@ -1,0 +1,100 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract SBT is ERC721, Ownable {
+    uint256 public nextId = 1;
+
+    // tokenId -> metadata hash (CID keccak)
+    mapping(uint256 => bytes32) public cidHashByToken;
+
+    // Organizer whitelist
+    mapping(address => bool) public organizers;
+
+    event OrganizerAdded(address indexed org);
+    event OrganizerRemoved(address indexed org);
+
+    // Nonce replay protection (voucher-level)
+    mapping(bytes32 => bool) public usedNonces;
+
+    // Event attendance tracking: eventIdHash -> student -> claimed?
+    mapping(bytes32 => mapping(address => bool)) public eventClaimed;
+
+    // Optional business rule: max hours cho mỗi event
+    mapping(bytes32 => uint256) public maxHoursPerEvent;
+
+    modifier onlyOrganizerOrOwner() {
+        require(organizers[_msgSender()] || _msgSender() == owner(), "Not organizer");
+        _;
+    }
+
+    constructor() ERC721("Volunteer SBT", "vSBT") {
+        organizers[_msgSender()] = true;
+        emit OrganizerAdded(_msgSender());
+    }
+
+    // ============ Organizer Management ============
+    function addOrganizer(address org) external onlyOrganizerOrOwner {
+        require(org != address(0), "zero addr");
+        require(!organizers[org], "already organizer");
+        organizers[org] = true;
+        emit OrganizerAdded(org);
+    }
+
+    function removeOrganizer(address org) external onlyOwner {
+        organizers[org] = false;
+        emit OrganizerRemoved(org);
+    }
+
+    function isOrganizer(address org) public view returns (bool) {
+        return organizers[org];
+    }
+}
+
+    // ============ Mint with Checks ============
+    // LƯU Ý: eventId truyền vào là bytes32 (khuyến nghị: keccak(eventIdString))
+    function mintSBT(
+    address to,
+    bytes32 cidHash,
+    bytes32 nonce,
+    bytes32 eventId,
+    uint256 numHours,
+    address organizer
+) external {
+    require(organizers[organizer], "Not a whitelisted organizer");
+    require(!usedNonces[nonce], "Nonce already used");
+    require(!eventClaimed[eventId][to], "Already claimed for this event");
+
+    uint256 maxH = maxHoursPerEvent[eventId];
+    if (maxH > 0) {
+        require(numHours <= maxH, "Exceeds max allowed hours");
+    }
+
+    uint256 tokenId = nextId++;
+    _safeMint(to, tokenId);
+    cidHashByToken[tokenId] = cidHash;
+
+    usedNonces[nonce] = true;
+    eventClaimed[eventId][to] = true;
+}
+
+    // ============ Non-transferable ============
+    function _transfer(address, address, uint256) internal pure override {
+        revert("Soulbound: non-transferable");
+    }
+
+    function approve(address, uint256) public pure override {
+        revert("Soulbound: non-transferable");
+    }
+
+    function setApprovalForAll(address, bool) public pure override {
+        revert("Soulbound: non-transferable");
+    }
+
+    // ============ Event Rules ============
+    function setMaxHoursForEvent(bytes32 eventId, uint256 maxHours) external onlyOwner {
+        maxHoursPerEvent[eventId] = maxHours;
+    }	
+}
