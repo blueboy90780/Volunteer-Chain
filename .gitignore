@@ -1,0 +1,118 @@
+# Root .gitignore for Volunteer-Chain
+# Covers Python (Brownie), Node/React, Bun/TypeScript, and common OS/IDE files
+
+# -----------------------
+# OS / Editor noise
+# -----------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+
+# VS Code / IDEs (uncomment if you prefer committing workspace settings)
+.vscode/
+.idea/
+
+# -----------------------
+# Environment files
+# -----------------------
+.env
+.env.*
+!.env.example
+
+# -----------------------
+# Node / Bun / Frontend
+# -----------------------
+node_modules/
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+.pnpm-store/
+
+# Lockfiles to keep (do NOT ignore): package-lock.json, pnpm-lock.yaml, yarn.lock, bun.lock
+# Bun binary lockfile can be ignored safely
+bun.lockb
+
+# Build output (targeted)
+dist/
+out/
+coverage/
+coverage-final.json
+.cache/
+.parcel-cache/
+
+# Framework-specific (harmless if unused)
+.next/
+.nuxt/
+.astro/
+.svelte-kit/
+
+# CRA app build (explicit)
+volunteerchain-dapp/build/
+
+# IPFS demo generated outputs (keep currently tracked files; ignore new ones)
+Cryptographic Verification and IPFS/outputs/
+
+# -----------------------
+# TypeScript
+# -----------------------
+*.tsbuildinfo
+
+# -----------------------
+# Python
+# -----------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.python-version
+.venv/
+venv/
+env/
+
+# Python tooling caches
+.pytest_cache/
+.mypy_cache/
+ruff_cache/
+.hypothesis/
+.tox/
+.pyre/
+.dmypy.json
+
+# Coverage
+.coverage
+.coverage.*
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# -----------------------
+# Solidity toolchains
+# -----------------------
+# Hardhat/Foundry (not currently used, safe to ignore if added later)
+artifacts/
+cache/
+typechain/
+typechain-types/
+broadcast/
+
+# Brownie
+# By default, Brownie generates a build/ directory. This repo currently contains
+# committed artifacts under "Smart Contract and SBT Token/build/". To avoid
+# accidentally preventing new artifacts from being committed there, we DO NOT
+# ignore that specific path by default.
+# If you later want to ignore Brownie build outputs entirely, uncomment below:
+# Smart Contract and SBT Token/build/
+
+# -----------------------
+# Misc temp files
+# -----------------------
+.tmp/
+.temp/
+tmp/
+temp/
