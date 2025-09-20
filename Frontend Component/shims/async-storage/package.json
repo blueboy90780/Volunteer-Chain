@@ -1,0 +1,7 @@
+{
+  "name": "@react-native-async-storage/async-storage",
+  "version": "0.0.0-web-shim",
+  "description": "Web shim for React Native AsyncStorage (used to satisfy bundlers in web builds)",
+  "main": "index.js",
+  "license": "MIT"
+}

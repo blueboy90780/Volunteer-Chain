@@ -1,17 +1,32 @@
 from brownie import accounts, SBT, network
-import os
+import os, json
 
 def main():
     print(f"Network: {network.show_active()}")
     pk = os.getenv("PRIVATE_KEY")
-    if not pk:
-        raise ValueError("PRIVATE_KEY missing in .env")
-
-    acct = accounts.add(pk)
+    if pk:
+        acct = accounts.add(pk)
+    else:
+        # Fallback to first local account provided by Ganache
+        acct = accounts[0]
     print(f"Deployer: {acct.address}")
 
     c = SBT.deploy({"from": acct})
     print(f"SBT deployed at: {c.address}")
+
+    # Optionally write the deployed address to a shared file for other services
+    shared_dir = os.getenv("SHARED_DIR")
+    if shared_dir:
+        try:
+            os.makedirs(shared_dir, exist_ok=True)
+            out_path = os.path.join(shared_dir, "contract-address.txt")
+            with open(out_path, "w") as f:
+                f.write(c.address)
+            with open(os.path.join(shared_dir, "deploy.json"), "w") as f:
+                json.dump({"address": c.address, "network": network.show_active()}, f)
+            print(f"Wrote contract address to: {out_path}")
+        except Exception as e:
+            print(f"[warn] failed to write shared contract address: {e}")
 
     # Whitelist organizer = chính deployer (hoặc một địa chỉ khác nếu bạn muốn)
     tx = c.addOrganizer(acct.address, {"from": acct})

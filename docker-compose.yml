@@ -1,0 +1,91 @@
+version: "3.9"
+
+services:
+  chain:
+    image: trufflesuite/ganache:v7.9.2
+    command:
+      [
+        "--chain.chainId",
+        "1337",
+        "--miner.blockGasLimit",
+        "12000000",
+        "--wallet.totalAccounts",
+        "10",
+        "--wallet.seed",
+        "volunteer-chain",
+      ]
+    ports:
+      - "8545:8545"
+
+  contracts:
+    build:
+      context: "./Smart Contract and SBT Token"
+      dockerfile: Dockerfile
+    working_dir: /app
+    environment:
+      - WEB3_PROVIDER=http://chain:8545
+      - ETH_NETWORK=development
+      - BROWNIE_NETWORK=development
+      - PRIVATE_KEY=${PRIVATE_KEY:-}
+      - SHARED_DIR=/shared
+    depends_on:
+      - chain
+    # Wait for chain, then deploy contract, then keep container alive (for logs and shared files)
+    command: bash -lc "until nc -z chain 8545; do echo waiting for chain; sleep 1; done; brownie networks add Development ganache host=${WEB3_PROVIDER} chainid=1337 || true && brownie run scripts/deploy.py --network ganache && sleep infinity"
+    volumes:
+      - contracts_shared:/shared
+
+  api:
+    build:
+      context: "./Smart Contract and SBT Token"
+      dockerfile: Dockerfile
+    working_dir: /app/offchain
+    environment:
+      - RPC_URL=http://chain:8545
+      - CONTRACT_ADDRESS=${CONTRACT_ADDRESS:-}
+      - PRIVATE_KEY=${PRIVATE_KEY:?Set PRIVATE_KEY in .env}
+      - PINATA_JWT=${PINATA_JWT:-}
+      - CHAIN_ID=1337
+    depends_on:
+      - contracts
+    command: bash -lc "if [ -z \"$CONTRACT_ADDRESS\" ] && [ -f /shared/contract-address.txt ]; then export CONTRACT_ADDRESS=\"$(cat /shared/contract-address.txt)\"; fi; uvicorn main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+    volumes:
+      - contracts_shared:/shared
+
+  offchain:
+    build:
+      context: "./Cryptographic Verification and IPFS"
+      dockerfile: Dockerfile
+    working_dir: /app
+    environment:
+      - NODE_ENV=production
+      - PINATA_JWT=${PINATA_JWT}
+      - ORGANIZER_PRIVATE_KEY=${PRIVATE_KEY}
+      - RPC_URL=http://chain:8545
+      - CONTRACT_ADDRESS=${CONTRACT_ADDRESS:-}
+    depends_on:
+      - contracts
+    # This runs the demo script that talks to IPFS and generates QR codes
+    volumes:
+      - "./Cryptographic Verification and IPFS/outputs:/app/outputs"
+
+  frontend:
+    build:
+      context: "./Frontend Component"
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_CHAIN_RPC: http://localhost:8545
+        REACT_APP_CONTRACT_ADDRESS: ${CONTRACT_ADDRESS:-}
+    ports:
+      - "3000:80"
+    depends_on:
+      - contracts
+
+volumes:
+  contracts_shared:
+
+networks:
+  default:
+    name: volunteer-chain
